@@ -26,7 +26,8 @@ export const assignmentWorker = new Worker(
     await assignment.save()
 
     const prompt = buildQuestionPrompt(assignment)
-    const promptHash = crypto.createHash('sha256').update(prompt).digest('hex')
+    const hashInput = assignment.fileUrl ? `${prompt}|${assignment.fileUrl}` : prompt
+    const promptHash = crypto.createHash('sha256').update(hashInput).digest('hex')
     const cacheKey = `prompt:cache:${promptHash}`
     
     const cached = await redisClient.get(cacheKey)
