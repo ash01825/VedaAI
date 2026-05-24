@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 
-const isProd = process.env.NODE_ENV === 'production'
-const BACKEND_URL = isProd ? undefined : (process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000')
+const BACKEND_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000'
 
 interface GenerationProgress {
   status: 'idle' | 'queued' | 'generating' | 'completed' | 'failed'
