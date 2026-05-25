@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { mockGeneratedPaper } from '@/lib/mock-data'
 import { useState, use } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { api, BASE_URL } from '@/lib/api'
 
 export default function AssignmentOutputPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -58,10 +58,26 @@ export default function AssignmentOutputPage({ params }: { params: Promise<{ id:
         window.open(data.data.pdfUrl, '_blank')
       } else {
         await api.pdf.generate(id)
-        alert('PDF generation queued. Please check back in a few seconds.')
+        
+        // Poll for completion
+        let attempts = 0
+        while (attempts < 20) {
+          await new Promise(r => setTimeout(r, 2000))
+          const status = await api.pdf.getStatus(id)
+          if (status.status === 'completed' && status.pdfUrl) {
+            const finalUrl = status.pdfUrl.startsWith('/') ? `${BASE_URL}${status.pdfUrl}` : status.pdfUrl
+            window.open(finalUrl, '_blank')
+            break
+          }
+          attempts++
+        }
+        if (attempts >= 20) {
+          alert('PDF generation is taking longer than expected. Please refresh the page in a few moments.')
+        }
       }
     } catch (e) {
       console.error(e)
+      alert('An error occurred while generating the PDF.')
     } finally {
       setDownloading(false)
     }
