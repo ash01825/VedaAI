@@ -141,13 +141,35 @@ While we have successfully mapped out the core assessment generator, certain opt
 - **Advanced Context Caching**: We currently cache identical prompts using a simple SHA256 Redis hash. In the future, this can be drastically improved by integrating a Vector Database (like Pinecone or Milvus) to cache semantic embeddings. This would reduce redundant AI API calls for semantically similar uploaded documents.
 - **Granular Editing**: The UI fully supports deleting assignments via the dashboard, but inline editing of individual AI-generated questions directly on the page is mapped out for a future product iteration.
 
+## 🧠 AI Configuration & Prompt Architecture
+
+We fine-tuned the integration with **Google Gemini 3.5 Flash** to prevent LLM hallucination and ensure high-fidelity question generation from uploaded documents.
+- **Strict Document Extraction**: The system prompt is mathematically constrained with a `CRITICAL REQUIREMENT` rule. If a user uploads a document (e.g., an advanced research paper on Pedestrian Action Recognition), Gemini is strictly forbidden from falling back to its internal knowledge base (e.g., generating generic 8th-grade science questions). It is forced to extract facts and context *exclusively* from the attached document, while adapting the difficulty to the requested grade level.
+- **Direct Cloud Uploads**: To solve distributed filesystem issues in microservice deployments, the Express API uploads the PDF directly to Google's GenAI File Storage and retrieves a `fileUri`. The background worker then passes this URI to Gemini, completely bypassing local disk dependency.
+
+---
+
+## 🌍 Deployment (Vercel & Railway)
+
+The application is deployed across two cloud providers for optimal performance and scalability:
+
+### Frontend (Vercel)
+- The Next.js 15 application is deployed on Vercel (`https://veda-ai-puce.vercel.app`).
+- **ISP Block Bypass via Vercel Rewrites**: Many ISPs and corporate networks aggressively block free PaaS domains (like `.up.railway.app`). To prevent DNS resolution errors for end-users, we configured **Vercel Rewrites** (`next.config.ts`). The frontend browser makes API calls directly to the Vercel domain (`/api/*`), and Vercel's edge network securely proxies the traffic to the Railway backend via server-to-server communication, completely bypassing local DNS blocks.
+
+### Backend (Railway)
+- The backend is deployed on Railway as two separate scalable services:
+  1. **API Service**: Express server handling HTTP requests, file uploads (Multer), and enqueueing jobs to Redis.
+  2. **Worker Service**: Background process running BullMQ. It picks up queued generation jobs, connects to Gemini, and emits real-time progress back to the API service via Redis Pub/Sub (`@socket.io/redis-emitter`).
+- **Infrastructure**: Railway provisions our isolated MongoDB and Redis databases, passing their connection strings as securely encrypted environment variables to the backend services.
+
 ---
 
 ## 🛠 Tech Stack
 
 - **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS, Zustand, Socket.IO Client.
 - **Backend**: Express.js, TypeScript, Multer, Socket.IO.
-- **Infrastructure**: MongoDB (Mongoose), Redis (ioredis), BullMQ.
+- **Infrastructure**: MongoDB (Mongoose), Redis (ioredis), BullMQ, Vercel Edge Network, Railway.
 - **AI / Logic**: Google GenAI SDK (`gemini-3.5-flash`), Zod (Schema Validation), Puppeteer (PDF rendering).
 
 ---
