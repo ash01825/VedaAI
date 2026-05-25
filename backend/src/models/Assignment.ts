@@ -96,6 +96,9 @@ const AssignmentSchema = new Schema<IAssignment>(
     fileUrl: {
       type: String,
     },
+    fileMimeType: {
+      type: String,
+    },
     jobId: {
       type: String,
       index: true,
