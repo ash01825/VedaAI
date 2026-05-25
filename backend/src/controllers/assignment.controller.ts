@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
 import { Assignment } from '../models/Assignment'
 import { enqueueGeneration } from '../queues/assignment.queue'
+import { geminiProvider } from '../providers/gemini.provider'
+import * as fs from 'fs'
 
 export const createAssignment = async (req: Request, res: Response) => {
   try {
@@ -8,9 +10,18 @@ export const createAssignment = async (req: Request, res: Response) => {
     if (req.body.data) {
       payload = JSON.parse(req.body.data)
     }
-    const fileUrl = req.file ? req.file.path : undefined
+    
+    let fileUrl: string | undefined
+    let fileMimeType: string | undefined
 
-    const assignment = new Assignment({ ...payload, fileUrl, status: 'queued' })
+    if (req.file && fs.existsSync(req.file.path)) {
+      const fileData = await geminiProvider.uploadFile(req.file.path)
+      fileUrl = fileData.uri
+      fileMimeType = fileData.mimeType
+      fs.unlinkSync(req.file.path) // Clean up local file
+    }
+
+    const assignment = new Assignment({ ...payload, fileUrl, fileMimeType, status: 'queued' })
     await assignment.save()
     await enqueueGeneration(assignment.id)
     res.status(201).json({ data: assignment })

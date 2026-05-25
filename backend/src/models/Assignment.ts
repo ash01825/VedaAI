@@ -24,6 +24,7 @@ export interface IAssignment extends Document {
   sections: IAssignmentSection[];
   additionalInfo?: string;
   fileUrl?: string;
+  fileMimeType?: string;
   jobId?: string;
   generationId?: string;
   createdAt: Date;

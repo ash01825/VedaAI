@@ -44,7 +44,11 @@ export const assignmentWorker = new Worker(
       cacheHit = true
     } else {
       const start = Date.now()
-      const rawResponse = await geminiProvider.generateQuestionPaper(prompt, assignment.fileUrl)
+      let fileDataObj = undefined;
+      if (assignment.fileUrl && assignment.fileMimeType) {
+        fileDataObj = { uri: assignment.fileUrl, mimeType: assignment.fileMimeType };
+      }
+      const rawResponse = await geminiProvider.generateQuestionPaper(prompt, fileDataObj)
       genTime = Date.now() - start
       
       paperObj = safeParseJSON(rawResponse)
