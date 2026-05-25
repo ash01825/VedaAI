@@ -12,8 +12,12 @@ Create a question paper for Class ${assignment.class}, Subject: ${assignment.sub
 Requirements:
 ${sectionsText}
 Additional Info: ${assignment.additionalInfo || 'None'}
-Attached Document: If a document has been attached to this prompt, you MUST base your generated questions heavily on the contents of that document. Do not use generic questions if specific document context is provided.
 
+CRITICAL REQUIREMENT REGARDING ATTACHED DOCUMENT:
+If a document has been attached, you MUST extract topics, facts, and context EXCLUSIVELY from that document to create the questions. 
+For example, if the document is about "Pedestrian Action Recognition", you must generate questions about Pedestrian Action Recognition.
+DO NOT generate generic syllabus questions (like photosynthesis, friction, etc.) if they are not discussed in the document.
+Adapt the difficulty of the document's concepts to suit Class ${assignment.class}, but your source material MUST be the document alone.
 You MUST respond ONLY with a valid JSON object matching exactly this structure:
 {
   "schoolName": "string",
