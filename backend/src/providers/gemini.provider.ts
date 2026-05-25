@@ -6,11 +6,14 @@ import * as fs from 'fs'
 const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY })
 
 export const geminiProvider = {
-  async uploadFile(filePath: string): Promise<{ uri: string, mimeType: string }> {
-    logger.info(`[AI] Uploading file to Gemini: ${filePath}`)
+  async uploadFile(filePath: string, mimeType: string): Promise<{ uri: string, mimeType: string }> {
+    logger.info(`[AI] Uploading file to Gemini: ${filePath} with mimeType ${mimeType}`)
     const file = await ai.files.upload({
       file: filePath,
-      config: { displayName: filePath.split('/').pop() },
+      config: { 
+        displayName: filePath.split('/').pop(),
+        mimeType: mimeType
+      },
     });
     let getFile = await ai.files.get({ name: file.name! });
     while (getFile.state === 'PROCESSING') {
@@ -27,12 +30,15 @@ export const geminiProvider = {
       const contents: any[] = []
 
       if (fileData && fileData.uri) {
+        logger.info(`[DEBUG] Gemini Provider received fileData: ${JSON.stringify(fileData)}`);
         contents.push({
           fileData: {
             fileUri: fileData.uri,
             mimeType: fileData.mimeType
           }
         });
+      } else {
+        logger.info(`[DEBUG] Gemini Provider did NOT receive fileData!`);
       }
 
       // Add the text prompt at the end
@@ -44,6 +50,7 @@ export const geminiProvider = {
         contents: contents,
         config: {
           responseMimeType: 'application/json',
+          systemInstruction: 'You are an AI that ONLY extracts facts from the uploaded document. If a document is present, YOU MUST IGNORE ALL PREVIOUS KNOWLEDGE about the Class or Subject. Generate questions based EXCLUSIVELY on the document text.'
         },
       })
       

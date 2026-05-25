@@ -15,7 +15,7 @@ export const createAssignment = async (req: Request, res: Response) => {
     let fileMimeType: string | undefined
 
     if (req.file && fs.existsSync(req.file.path)) {
-      const fileData = await geminiProvider.uploadFile(req.file.path)
+      const fileData = await geminiProvider.uploadFile(req.file.path, req.file.mimetype)
       fileUrl = fileData.uri
       fileMimeType = fileData.mimeType
       fs.unlinkSync(req.file.path) // Clean up local file

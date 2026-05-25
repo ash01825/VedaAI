@@ -13,11 +13,11 @@ Requirements:
 ${sectionsText}
 Additional Info: ${assignment.additionalInfo || 'None'}
 
-CRITICAL REQUIREMENT REGARDING ATTACHED DOCUMENT:
-If a document has been attached, you MUST extract topics, facts, and context EXCLUSIVELY from that document to create the questions. 
-For example, if the document is about "Pedestrian Action Recognition", you must generate questions about Pedestrian Action Recognition.
-DO NOT generate generic syllabus questions (like photosynthesis, friction, etc.) if they are not discussed in the document.
-Adapt the difficulty of the document's concepts to suit Class ${assignment.class}, but your source material MUST be the document alone.
+CRITICAL INSTRUCTIONS:
+- DO NOT use the "Class" or "Subject" to decide the topics of the questions. Those are ONLY for the title of the JSON output.
+- You MUST extract topics, facts, and context EXCLUSIVELY from the attached document.
+- If the document is about "Pedestrian Action Recognition", you MUST generate questions about Pedestrian Action Recognition, even if the subject is "General Science".
+- ABSOLUTELY DO NOT generate generic textbook questions (like photosynthesis, friction, cells, etc.). Your source material MUST BE ONLY the attached document.
 You MUST respond ONLY with a valid JSON object matching exactly this structure:
 {
   "schoolName": "string",

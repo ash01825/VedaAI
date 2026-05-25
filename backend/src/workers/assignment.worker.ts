@@ -45,9 +45,16 @@ export const assignmentWorker = new Worker(
     } else {
       const start = Date.now()
       let fileDataObj = undefined;
+      
+      logger.info(`[DEBUG] Worker executing. assignment.fileUrl: ${assignment.fileUrl}, assignment.fileMimeType: ${assignment.fileMimeType}`);
+      
       if (assignment.fileUrl && assignment.fileMimeType) {
         fileDataObj = { uri: assignment.fileUrl, mimeType: assignment.fileMimeType };
+        logger.info(`[DEBUG] fileDataObj successfully created: ${JSON.stringify(fileDataObj)}`);
+      } else {
+        logger.info(`[DEBUG] fileDataObj NOT created because fileUrl or fileMimeType is missing.`);
       }
+      
       const rawResponse = await geminiProvider.generateQuestionPaper(prompt, fileDataObj)
       genTime = Date.now() - start
       
